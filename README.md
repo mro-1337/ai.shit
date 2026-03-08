@@ -4,5 +4,6 @@
 * launcher.js - synchronet javascript doorgame search and launch
 
 
-* weather.js - synchronet javascript weather script.  does not need an api.  uses ascii art like wttr.in
+* weather.js - synchronet javascript weather script.  does not need an api KEY.  uses ascii art like wttr.in
 
+* eoblcalls.js - synchronet javascript  last callers.  very configurable  
