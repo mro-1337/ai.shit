@@ -6,4 +6,4 @@
 
 * weather.js - synchronet javascript weather script.  does not need an api KEY.  uses ascii art like wttr.in
 
-* eoblcalls.js - synchronet javascript  last callers.  very configurable  
+* lcalls.js - synchronet javascript  last callers.  very configurable  
