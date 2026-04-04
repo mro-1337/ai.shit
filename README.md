@@ -7,3 +7,7 @@
 * weather.js - synchronet javascript weather script.  does not need an api KEY.  uses ascii art like wttr.in
 
 * lcalls.js - synchronet javascript  last callers.  very configurable  
+
+* nationaldays.js - national days script.  needs work to fix issues with & and accent chars
+
+* tetris.js - tetris exercise
