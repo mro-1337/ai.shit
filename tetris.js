@@ -1,6 +1,5 @@
 // ===== START PART 1 =====
 // Synchronet BBS Tetris Game - tetris.js
-// Place in sbbs/xtrn/tetrisjs/tetris.js
 
 load("sbbsdefs.js");
 
@@ -9,6 +8,7 @@ const MAX_PT_X = 5;
 const MAX_SHAPE = 7;
 const MAX_LEVEL = 18;
 const MAX_HIGH_SCORES = 10;
+const MAX_SCREEN_ROW = 23;  // Maximum screen row - nothing should go below this
 const GAME_DIR = system.exec_dir + "../xtrn/tetrisjs/";
 const CONFIG_FILE = GAME_DIR + "tetris.cfg";
 //const SCORES_FILE = system.data_dir + "tetris.scores";
@@ -123,7 +123,7 @@ var cfg = {
     useAnsiBackground: true,
     coloredPieces:     true,
     gridWidth:         15,
-    gridHeight:        20
+    gridHeight:        19  // Max safe height: MAX_SCREEN_ROW (23) - gridY (3) - 1 = 19
 };
 
 function loadConfig() {
@@ -195,6 +195,14 @@ var game = {
 function initGrid() {
     game.gridWidth = cfg.gridWidth;
     game.gridHeight = cfg.gridHeight;
+    
+    // Ensure grid doesn't exceed MAX_SCREEN_ROW
+    // gridY + gridHeight + 1 (bottom border) <= MAX_SCREEN_ROW
+    var maxAllowedHeight = MAX_SCREEN_ROW - game.gridY - 1;
+    if (game.gridHeight > maxAllowedHeight) {
+        game.gridHeight = maxAllowedHeight;
+    }
+    
     game.grid = [];
     for (var y = 0; y < game.gridHeight; y++) {
         game.grid[y] = [];
@@ -207,6 +215,15 @@ function initGrid() {
 function writeAt(col, row, attr, str) {
     console.gotoxy(col, row);
     console.print(attr + str);
+}
+
+function stripAnsi(str) {
+    // Remove ANSI color codes and Synchronet color codes to get visible length
+    return str.replace(/\x1b\[[^m]*m/g, '').replace(/\x01[hncrgybmw]/gi, '');
+}
+
+function getVisibleLength(str) {
+    return stripAnsi(str).length;
 }
 
 function loadAnsiBackground() {
@@ -228,12 +245,23 @@ function loadAnsiBackground() {
 function getBlockChars(filled, isActive, shapeIndex) {
     var style = BLOCK_STYLES[cfg.blockStyle];
     if (!filled) {
-        return { attr: ATTR.empty, ch: style.empty };
+        // Always use black background with spaces to cover ANSI art
+        return { attr: "\x1b[0;40m", ch: "  " };
     }
     if (cfg.coloredPieces && shapeIndex >= 0 && shapeIndex < MAX_SHAPE) {
         return { attr: SHAPE_COLORS[shapeIndex], ch: style.filled };
     }
     return { attr: PLACED_COLOR, ch: style.filled };
+}
+
+function fillGridWithBlack() {
+    // Fill the entire play area with black background to cover ANSI art
+    var blackBg = "\x1b[0;40m";
+    for (var gy = 0; gy < game.gridHeight; gy++) {
+        for (var gx = 0; gx < game.gridWidth; gx++) {
+            writeAt(game.gridX + gx * 2, game.gridY + gy, blackBg, "  ");
+        }
+    }
 }
 
 function renderGrid() {
@@ -303,7 +331,10 @@ function drawInfoPanel() {
     var panelLeft = game.gridX + game.gridWidth * 2 + 2;
     var panelWidth = 20;
     var panelTop = game.gridY - 1;
-    var panelHeight = 23;  // Increased to fit all controls
+    
+    // Calculate panel height to not exceed MAX_SCREEN_ROW
+    var maxPanelHeight = MAX_SCREEN_ROW - panelTop;
+    var panelHeight = Math.min(23, maxPanelHeight);
 
     console.print(ATTR.border);
 
@@ -572,7 +603,7 @@ function showHighScores() {
     console.print(ATTR.title);
     console.print("\r\n\r\n");
     console.print("  \xC9\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBB\r\n");
-    console.print("  \xBA          TETRIS HIGH SCORES                \xBA\r\n");
+    console.print("  \xBA          TETRIS HIGH SCORES                     \xBA\r\n");
     console.print("  \xC8\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBC\r\n\r\n");
 
     var scores = loadScores();
@@ -606,7 +637,7 @@ function drawSetupMenu() {
     console.print(ATTR.title);
     console.print("\r\n");
     console.print("  \xC9\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBB\r\n");
-    console.print("  \xBA       TETRIS SETUP MENU         \xBA\r\n");
+    console.print("  \xBA       TETRIS SETUP MENU      \xBA\r\n");
     console.print("  \xC8\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBC\r\n\r\n");
 
     console.print(ATTR.hilight + "  1. " + ATTR.text +
@@ -752,9 +783,13 @@ function setupGridWidth() {
 }
 
 function setupGridHeight() {
+    // Calculate maximum allowed height based on gridY position
+    var maxHeight = MAX_SCREEN_ROW - game.gridY - 1;
+    
     console.clear();
-    console.print(ATTR.title + "\r\n  SET GRID HEIGHT (10-30)\r\n\r\n");
+    console.print(ATTR.title + "\r\n  SET GRID HEIGHT (10-" + maxHeight + ")\r\n\r\n");
     console.print(ATTR.text + "  Current: " + cfg.gridHeight + "\r\n");
+    console.print(ATTR.text + "  Max allowed: " + maxHeight + " (to fit on screen)\r\n");
     console.print(ATTR.text + "  Enter new height + ENTER: ");
 
     var input = "";
@@ -770,7 +805,7 @@ function setupGridHeight() {
     }
 
     var num = parseInt(input);
-    if (!isNaN(num) && num >= 10 && num <= 30) {
+    if (!isNaN(num) && num >= 10 && num <= maxHeight) {
         cfg.gridHeight = num;
     }
 }
@@ -819,28 +854,42 @@ function setupMenu() {
 
 function showTitle() {
     console.clear();
+    
+    // Center the header box
+    var headerLine1 = "\x01h\x01k\xC9\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBB";
+    var headerLine2 = "\x01h\x01k\xBA  \x01w  TETRIS for Synchronet BBS Software \x01k  \xBA";
+    var headerLine3 = "\x01h\x01k\xC8\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBC";
+    
+    var headerPad = Math.floor((console.screen_columns - getVisibleLength(headerLine1)) / 2);
+    if (headerPad < 0) headerPad = 0;
+    
+    console.print(format("%" + headerPad + "s%s\r\n", "", headerLine1));
+    console.print(format("%" + headerPad + "s%s\r\n", "", headerLine2));
+    console.print(format("%" + headerPad + "s%s\r\n\r\n", "", headerLine3));
+
     console.print(ATTR.title);
 
     var lines = [
         "",
         "",
-        " ##### ####### ####### ####  ### #####",
-        "   #   #          #    #   #  #  #    ",
-        "   #   #####      #    ####   #  #####",
-        "   #   #          #    #  #   #      #",
-        "   #   #######    #    #   # ### #####"
+        "\x01h\x01r ##### \x01n\x01y#######\x01h #######\x01g ####  \x01c### \x01m#####",
+        "\x01h\x01r   #   \x01n\x01y#      \x01h    #    \x01g#   #  \x01c#  \x01m#    ",
+        "\x01h\x01r   #   \x01n\x01y#####  \x01h    #   \x01g ####   \x01c#  \x01m#####",
+        "\x01h\x01r   #   \x01n\x01y#      \x01h    #   \x01g #  #   \x01c#  \x01m    #",
+        "\x01h\x01r   #   \x01n\x01y#######\x01h    #    \x01g#   # \x01c### \x01m#####"
     ];
 
     for (var i = 0; i < lines.length; i++) {
-        var pad = Math.floor((console.screen_columns - lines[i].length) / 2);
-        if (pad < 1) pad = 1;
+        var pad = Math.floor((console.screen_columns - getVisibleLength(lines[i])) / 2);
+        if (pad < 0) pad = 0;
         console.print(format("%" + pad + "s%s\r\n", "", lines[i]));
     }
 
     console.print(ATTR.subtitle);
-    var sub = "Synchronet BBS Edition";
-    var pad = Math.floor((console.screen_columns - sub.length) / 2);
-    console.print(format("%" + pad + "s%s\r\n\r\n", "", sub));
+    var sub = "\r\n\x01g";
+    var pad = Math.floor((console.screen_columns - getVisibleLength(sub)) / 2);
+    if (pad < 0) pad = 0;
+    console.print(format("\x01h%" + pad + "s\x01n%s\r\n\r\n", "", sub));
 
     console.print(ATTR.text);
     var opts = [
@@ -851,8 +900,9 @@ function showTitle() {
     ];
 
     for (var i = 0; i < opts.length; i++) {
-        var p = Math.floor((console.screen_columns - opts[i].length) / 2);
-        console.print(format("%" + p + "s%s\r\n", "", opts[i]));
+        var p = Math.floor((console.screen_columns - getVisibleLength(opts[i])) / 2);
+        if (p < 0) p = 0;
+        console.print(format("%" + p + "s%s\r\n","", opts[i]));
     }
 
     while (true) {
@@ -871,13 +921,15 @@ function showGameOver() {
     writeAt(cx, cy,     ATTR.gameover,
         "\xC9\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBB");
     writeAt(cx, cy + 1, ATTR.gameover,
-        "\xBA    GAME  OVER!    \xBA");
+        "\xBA    GAME  OVER! \xBA");
     writeAt(cx, cy + 2, ATTR.gameover,
         "\xC8\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xBC");
 
     saveHighScore();
 
-    console.gotoxy(1, game.gridY + game.gridHeight + 2);
+    // Ensure we don't go below MAX_SCREEN_ROW
+    var msgRow = Math.min(game.gridY + game.gridHeight + 2, MAX_SCREEN_ROW - 1);
+    console.gotoxy(1, msgRow);
     console.print(ATTR.title);
     console.print(" Score: " + game.score +
                   "  Lines: " + game.lines +
@@ -899,6 +951,7 @@ function playGame() {
 
     loadAnsiBackground();
     drawBorder();
+    fillGridWithBlack();  // Fill play area with black to cover ANSI art
     drawInfoPanel();
     drawInstructions();
     updateStats();
