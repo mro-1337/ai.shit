@@ -11,4 +11,4 @@
 * nationaldays.js - national days script.  needs work to fix issues with & and accent chars
 
 * tetris.js - tetris exercise
-* msggnuke  - deletes msgs on synchronet bbs using a .can file
+* msgnuke  - deletes msgs on synchronet bbs using a .can file
