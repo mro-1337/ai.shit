@@ -12,4 +12,4 @@
 
 * tetris.js - tetris exercise
 * msgnuke  - deletes msgs on synchronet bbs using a .can file
-* 2026-07-19.xchat.ignore.script.zip  more effective way to ignore.  ignore based on string.  gets past issues with irc bridges.
+* 2026-07-19.xchat.ignore.script.zip -  more effective way to ignore.  ignore based on string.  gets past issues with irc bridges.
