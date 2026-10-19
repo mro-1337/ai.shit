@@ -13,3 +13,4 @@
 * tetris.js - tetris exercise
 * msgnuke  - deletes msgs on synchronet bbs using a .can file
 * xchat.ignore.script.zip -  more effective way to ignore.  ignore based on string.  gets past issues with irc bridges.
+* 2026-10-19.Traycorral.zip - Hide programs in the Windows systray
