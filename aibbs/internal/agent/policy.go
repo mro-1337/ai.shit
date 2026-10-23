@@ -19,6 +19,8 @@ type BlockedError struct{ Reason string }
 
 func (e *BlockedError) Error() string { return e.Reason }
 
+var transferPromptRe = regexp.MustCompile(`(?i)(protocol|zmodem|xmodem|ymodem|transfer|download)`)
+
 var postingScreenRe = regexp.MustCompile(`(?i)(subject\s*:|enter your message|message body|type your message|save this message|post a message)`)
 
 // IsPostingScreen reports whether the screen looks like message composition.
@@ -58,11 +60,15 @@ func (p *Policy) Apply(ctx context.Context, d ai.Decision, screen string) (ai.De
 	posting := IsPostingScreen(screen)
 	composing := len([]rune(d.Value)) > 3 && d.Value != "Y" && d.Value != "N" && d.Value != "."
 	lowerScreen := strings.ToLower(screen)
-	bodyText := composing && (strings.Contains(lowerScreen, "enter your message") ||
+	bodyScreen := strings.Contains(lowerScreen, "enter your message") ||
 		strings.Contains(lowerScreen, "message body") ||
-		strings.Contains(lowerScreen, "type your message"))
+		strings.Contains(lowerScreen, "type your message")
+	bodyText := bodyScreen && d.Value != "" && d.Value != "." && d.Value != "Y" && d.Value != "N"
 
 	if d.Action == ai.ActionDownload {
+		if !transferPromptRe.MatchString(screen) {
+			return d, &BlockedError{Reason: "no transfer prompt on screen; refusing to send a protocol key"}
+		}
 		if p.cfg.Behavior.ReadOnly {
 			return d, &BlockedError{Reason: "downloads are disabled in read-only mode"}
 		}
@@ -85,7 +91,7 @@ func (p *Policy) Apply(ctx context.Context, d ai.Decision, screen string) (ai.De
 		}
 	}
 
-	if posting && composing {
+	if posting && (composing || bodyText) {
 		if p.cfg.Behavior.ReadOnly {
 			return d, &BlockedError{Reason: "posting is disabled in read-only mode"}
 		}

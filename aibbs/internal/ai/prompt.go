@@ -65,6 +65,10 @@ Available download protocols: zmodem, ymodem, xmodem.
 		b.WriteString(obs.DoorHint)
 		b.WriteString("\n")
 	}
+	if !obs.AllowDoors {
+		b.WriteString("\nDoor games are disabled by the operator. Do not launch or play any door " +
+			"game, and leave one if you are already inside it.\n")
+	}
 	if cfg.AI.ExtraPrompt != "" {
 		b.WriteString("\nAdditional operator instructions:\n")
 		b.WriteString(cfg.AI.ExtraPrompt)

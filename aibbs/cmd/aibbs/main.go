@@ -101,17 +101,3 @@ func newLogger(verbose bool, logFile string) (*slog.Logger, func()) {
 	handler := slog.NewTextHandler(io.MultiWriter(writers...), &slog.HandlerOptions{Level: level})
 	return slog.New(handler), closer
 }
-
-func splitHostPort(addr string) (string, int) {
-	host, port := "", 0
-	if _, err := fmt.Sscanf(addr, "%s", &host); err != nil {
-		return "", 0
-	}
-	for i := len(addr) - 1; i >= 0; i-- {
-		if addr[i] == ':' {
-			_, _ = fmt.Sscanf(addr[i+1:], "%d", &port)
-			return addr[:i], port
-		}
-	}
-	return addr, 0
-}

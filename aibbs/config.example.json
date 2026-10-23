@@ -1,0 +1,118 @@
+{
+  "bbs": {
+    "name": "localhost",
+    "host": "127.0.0.1",
+    "port": 23,
+    "cols": 80,
+    "rows": 24,
+    "terminal": "ANSI",
+    "dial_timeout_sec": 15,
+    "idle_millis": 450,
+    "max_settle_seconds": 8
+  },
+  "account": {
+    "handle": "SynthMind",
+    "password": "",
+    "password_env": "",
+    "real_name": "Synth Mind",
+    "email": "synthmind@example.invalid",
+    "location": "Cyberspace",
+    "allow_register": true
+  },
+  "ai": {
+    "provider": "openai",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "",
+    "api_key_env": "OPENAI_API_KEY",
+    "model": "gpt-4o-mini",
+    "temperature": 0.7,
+    "max_tokens": 700,
+    "timeout_sec": 60,
+    "json_mode": true,
+    "extra_prompt": "",
+    "trim_screen_rows": 60
+  },
+  "behavior": {
+    "persona": "You are SynthMind, a curious, friendly AI that hangs out on BBSes. You love old-school text interfaces, phreaking history, retro computing, science fiction, and good conversation. You are honest about being an AI.",
+    "style": "Warm, concise, a little playful. No emoji, no hashtags. Plain text, 80 columns. Never pretend to be human if asked directly.",
+    "goals": [
+      "Read the message areas, find a thread that interests you, and reply to it thoughtfully.",
+      "Browse the file areas and download one small file that looks interesting.",
+      "Play a door game for a few turns and then return to the main menu."
+    ],
+    "interests": [
+      "retro computing",
+      "BBS culture",
+      "science fiction",
+      "programming",
+      "space"
+    ],
+    "ignore_topics": null,
+    "blocked_words": null,
+    "max_steps": 80,
+    "min_action_delay_ms": 900,
+    "max_posts_per_session": 3,
+    "max_downloads_per_session": 2,
+    "max_download_mb": 20,
+    "max_read_messages": 25,
+    "min_post_chars": 12,
+    "max_post_chars": 1800,
+    "dry_run": false,
+    "read_only": false,
+    "allow_doors": true,
+    "auto_pager": true,
+    "state_dir": "state",
+    "transcript": true
+  },
+  "registration": {
+    "new_user_command": "NEW",
+    "terminal_answer": "ANSI",
+    "password_length": 14,
+    "answers": [
+      {
+        "match": "(?i)(real|full)\\s+name",
+        "value": "AUTO:realname"
+      },
+      {
+        "match": "(?i)e-?mail",
+        "value": "AUTO:email"
+      },
+      {
+        "match": "(?i)(location|city|where\\s+are\\s+you\\s+from)",
+        "value": "AUTO:location"
+      },
+      {
+        "match": "(?i)(phone|birth|\bage\b)",
+        "value": "AUTO:blank"
+      },
+      {
+        "match": "(?i)(terminal|ansi|graphics)",
+        "value": "AUTO:terminal"
+      },
+      {
+        "match": "(?i)(\\(y/n\\)|\\[y/n\\]|yes/no|continue\\?|correct\\?|ok\\?)",
+        "value": "Y"
+      }
+    ]
+  },
+  "downloads": {
+    "dir": "downloads",
+    "protocols": [
+      "zmodem",
+      "ymodem",
+      "xmodem"
+    ],
+    "protocol_keys": {
+      "xmodem": "X",
+      "ymodem": "Y",
+      "zmodem": "Z"
+    },
+    "idle_seconds": 90,
+    "max_file_mb": 20
+  },
+  "doors": {
+    "enabled": true,
+    "max_actions": 40,
+    "overrides": null
+  }
+}

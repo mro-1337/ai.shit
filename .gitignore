@@ -9,3 +9,7 @@
 # runtime state
 /aibbs/downloads/
 /aibbs/state/
+
+# per-user config and demo artifacts
+/aibbs/aibbs.json
+/aibbs/demo-state/
