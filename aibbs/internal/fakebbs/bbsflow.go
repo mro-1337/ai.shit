@@ -22,6 +22,7 @@ func (c *connState) run() {
 		c.t.writeString("\r\nGoodbye!\r\n")
 		return
 	}
+	c.srv.bump(func(s *Stats) { s.Logins++ })
 	c.mainMenu()
 	c.t.writeString("\r\nLogging off... Goodbye!\r\n")
 }
