@@ -1,0 +1,11 @@
+# local toolchain / caches
+.toolchain/
+.gocache/
+
+# build output
+/aibbs/aibbs
+/aibbs/aibbs.exe
+
+# runtime state
+/aibbs/downloads/
+/aibbs/state/
