@@ -215,12 +215,9 @@ func (c *Client) fill(timeout time.Duration) error {
 
 // ---------------------------------------------------------------- writing
 
-// Write sends raw bytes, escaping literal IAC so the peer does not treat
-// payload as Telnet commands.
+// Write sends payload bytes, escaping literal IAC so the peer does not
+// mistake data for Telnet commands.
 func (c *Client) Write(data []byte) error {
-	if c.closed {
-		return io.ErrClosedPipe
-	}
 	out := make([]byte, 0, len(data))
 	for _, b := range data {
 		out = append(out, b)
@@ -228,11 +225,20 @@ func (c *Client) Write(data []byte) error {
 			out = append(out, IAC)
 		}
 	}
+	return c.writeRaw(out)
+}
+
+// writeRaw writes bytes verbatim (used for Telnet commands and subnegotiation,
+// which must not be escaped).
+func (c *Client) writeRaw(data []byte) error {
+	if c.closed {
+		return io.ErrClosedPipe
+	}
 	if c.Opts.Trace != nil {
-		c.Opts.Trace("send", out)
+		c.Opts.Trace("send", data)
 	}
 	_ = c.conn.SetWriteDeadline(time.Now().Add(c.Opts.ReadTimeout))
-	_, err := c.conn.Write(out)
+	_, err := c.conn.Write(data)
 	return err
 }
 
@@ -243,14 +249,14 @@ func (c *Client) WriteString(s string) error { return c.Write([]byte(s)) }
 func (c *Client) SendLine(s string) error { return c.Write([]byte(s + "\r\n")) }
 
 func (c *Client) sendCommand(cmd, opt int) {
-	_ = c.Write([]byte{byte(cmd), byte(opt)})
+	_ = c.writeRaw([]byte{IAC, byte(cmd), byte(opt)})
 }
 
 func (c *Client) sendSubneg(opt int, payload []byte) {
 	buf := []byte{IAC, SB, byte(opt)}
 	buf = append(buf, payload...)
 	buf = append(buf, IAC, SE)
-	_ = c.Write(buf)
+	_ = c.writeRaw(buf)
 }
 
 func (c *Client) sendNAWS() {
