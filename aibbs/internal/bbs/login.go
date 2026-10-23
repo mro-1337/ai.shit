@@ -215,24 +215,21 @@ func (s *Session) matchAnswerRule(text string) *config.AnswerRule {
 }
 
 func (s *Session) answerValue(rule *config.AnswerRule, prompt string) string {
-	if rule.Value != "" && !strings.EqualFold(rule.Value, "AUTO") {
-		return rule.Value
-	}
-	lower := strings.ToLower(prompt)
-	switch {
-	case strings.Contains(lower, "name"):
+	switch strings.ToUpper(strings.TrimSpace(rule.Value)) {
+	case "AUTO:REALNAME":
 		return s.Cfg.Account.RealName
-	case strings.Contains(lower, "mail"):
+	case "AUTO:EMAIL":
 		return s.Cfg.Account.Email
-	case strings.Contains(lower, "location"), strings.Contains(lower, "city"):
+	case "AUTO:LOCATION":
 		return s.Cfg.Account.Location
-	case strings.Contains(lower, "terminal"), strings.Contains(lower, "ansi"):
+	case "AUTO:TERMINAL":
 		return s.Cfg.Registration.TerminalAnswer
-	case strings.Contains(lower, "phone"), strings.Contains(lower, "birth"),
-		strings.Contains(lower, "age"), strings.Contains(lower, "sex"):
+	case "AUTO:BLANK":
 		return ""
+	case "":
+		return "Y"
 	}
-	return "Y"
+	return rule.Value
 }
 
 func (s *Session) rememberAccount(registered bool) {

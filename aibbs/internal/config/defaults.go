@@ -71,12 +71,12 @@ func Default() *Config {
 			TerminalAnswer: "ANSI",
 			PasswordLength: 14,
 			Answers: []AnswerRule{
-				{Match: `(?i)(real|full) name`, Value: ""},
-				{Match: `(?i)(e-?mail)`, Value: ""},
-				{Match: `(?i)(location|city|where.*from)`, Value: ""},
-				{Match: `(?i)(phone|birth|age)`, Value: ""},
-				{Match: `(?i)(terminal|ansi|graphics)`, Value: "ANSI"},
-				{Match: `(?i)(yes|no|continue|correct|ok)\??\s*$`, Value: "Y"},
+				{Match: `(?i)(real|full)\s+name`, Value: "AUTO:realname"},
+				{Match: `(?i)e-?mail`, Value: "AUTO:email"},
+				{Match: `(?i)(location|city|where\s+are\s+you\s+from)`, Value: "AUTO:location"},
+				{Match: `(?i)(phone|birth|age)`, Value: "AUTO:blank"},
+				{Match: `(?i)(terminal|ansi|graphics)`, Value: "AUTO:terminal"},
+				{Match: `(?i)(\(y/n\)|\[y/n\]|yes/no|continue\?|correct\?|ok\?)`, Value: "Y"},
 			},
 		},
 		Downloads: DownloadsConfig{

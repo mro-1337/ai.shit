@@ -109,14 +109,14 @@ func (s *Session) Logoff() error {
 		return nil
 	}
 	for attempt := 0; attempt < 4; attempt++ {
-		if err := s.SendKeys("Q"); err != nil {
+		if err := s.SendLine("Q"); err != nil {
 			break
 		}
 		if err := s.Settle(); err != nil {
 			break
 		}
 		text := strings.ToLower(s.screen.Text())
-		if s.disconnected || strings.Contains(text, "logg") || strings.Contains(text, "goodbye") ||
+		if s.disconnected || strings.Contains(text, "logging off") || strings.Contains(text, "goodbye") ||
 			strings.Contains(text, "thanks for calling") || strings.Contains(text, "call back") {
 			break
 		}

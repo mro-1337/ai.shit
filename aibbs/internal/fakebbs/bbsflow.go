@@ -375,6 +375,8 @@ func (c *connState) compose(area, subject string) {
 	}
 	msg := c.srv.addMessage(area, c.user.Handle, subject, text)
 	c.t.writef("Message posted as #%d in %s.\r\n", msg.ID, area)
+	c.t.writeString("Hit any key to continue.")
+	_, _ = c.t.readKey(2 * time.Minute)
 }
 
 // ------------------------------------------------------------------- files
