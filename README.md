@@ -14,3 +14,4 @@
 * msgnuke  - deletes msgs on synchronet bbs using a .can file
 * xchat.ignore.script.zip -  more effective way to ignore.  ignore based on string.  gets past issues with irc bridges.
 * 2026-10-19.Traycorral.zip - Hide programs in the Windows systray
+* goterm-1.8.0.zip - go lang  terminal client.  sixel, ansi high color and sound support windows and linux
